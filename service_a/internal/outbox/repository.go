@@ -28,7 +28,7 @@ func (r *SQLRepository) Store(ctx context.Context, value int32) error {
 	id := uuid.New()
 	_, err := r.db.ExecContext(ctx, query, id, value)
 	if err != nil {
-		log.Panicln("Error inserting into outbox:", err)
+		log.Println("Error inserting into outbox:", err)
 		return err
 	}
 	return nil
