@@ -12,7 +12,7 @@ AddNet is a distributed microservice application demonstrating communication bet
 
 ## System Architecture
 
-![Architecture Diagram](https://i.imgur.com/gztFnNk.png)
+![Architecture Diagram](screenshots/add-net.png)
 
 The application consists of two main services:
 
@@ -37,7 +37,7 @@ The application consists of two main services:
 
 ## Monitoring
 
-![Monitoring Diagram](https://i.imgur.com/MOaO8Pi.jpeg)
+![Monitoring Diagram](screenshots/matric.jpeg)
 
 ## Prerequisites
 
