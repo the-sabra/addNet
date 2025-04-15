@@ -40,8 +40,8 @@ coverage/
 Thumbs.db
 
 # Project specific
-grafana/
-prometheus/
+# grafana/
+# prometheus/
 
 # Optional: backend binaries
 *.exe

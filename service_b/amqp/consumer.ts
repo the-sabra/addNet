@@ -3,7 +3,7 @@ import { updateNumber } from '../save-file';
 import { observeLatencyMetrics, type Payload } from '../prometheus/client';
 
 export const runConsumer = async (): Promise<void> => {
-  const connection = await amqp.connect('amqp://localhost');
+  const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost:5672');
   const channel = await connection.createChannel();
 
   const handleMessage = (queue: string) => async (message: amqp.ConsumeMessage | null): Promise<void> => {

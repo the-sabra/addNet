@@ -1,12 +1,10 @@
-version: '3'
-
 services:
   prometheus:
     image: prom/prometheus:v2.33.5
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--web.listen-address=0.0.0.0:9090'
+      # - '--web.listen-address=0.0.0.0:9090'
     ports:
       - 9090:9090
     restart: unless-stopped
@@ -25,8 +23,69 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
       - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/add-net.yml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
 
+  service_a:
+    build:
+      context: ./service_a
+    container_name: service_a
+    command: go run cmd/server/main.go
+    ports:
+      - "50051:50051"
+      # - "2112:2112" # Prometheus metrics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_started
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - DB_URL=postgres://postgres:postgres@db/postgres?sslmode=disable
+
+  service_b:
+    build:
+      context: ./service_b
+    container_name: service_b
+    command: bun run index.ts
+    ports:
+      - "2113:2113"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   prom_data:
+  postgres_data:
