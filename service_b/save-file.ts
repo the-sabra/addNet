@@ -1,11 +1,15 @@
 import fs from 'fs/promises';
 import path from 'path';
+import type { Payload } from './prometheus/client';
+import { Mutex } from 'async-mutex';
 
 const FILE_PATH = path.join('./files', 'saved.txt');
 const DIR_PATH = './files';
 
+const mutex = new Mutex();
 
-export async function updateNumber(number: number): Promise<void> {
+export async function updateNumber(payload: Payload): Promise<void> {
+    const release = await mutex.acquire();
     try {
         await ensureDirectoryExists(DIR_PATH);
         
@@ -24,7 +28,7 @@ export async function updateNumber(number: number): Promise<void> {
             console.log('No existing file found, creating new one');
         }
         
-        const newValue = currentValue + number;
+        const newValue = currentValue + payload.value;
         console.log('Updated value:', newValue);
         
         await fs.writeFile(FILE_PATH, newValue.toString());
@@ -32,6 +36,8 @@ export async function updateNumber(number: number): Promise<void> {
     } catch (error) {
         console.error('Error updating number:', error);
         throw error; 
+    }finally{
+        release(); 
     }
 }
 

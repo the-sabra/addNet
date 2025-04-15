@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -50,19 +51,45 @@ func (p *Processor) processMessages(ctx context.Context) error {
 		log.Println("Error fetching pending messages:", err)
 		return err
 	}
+	if len(outboxes) == 0 {
+		return nil
+	}
+
+	log.Printf("Processing %d outbox messages concurrently", len(outboxes))
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(outboxes))
 
 	for _, outbox := range outboxes {
-		err = p.publisher.PublishMessage("addition_queue", []byte(fmt.Sprintf("%d", outbox.Value)))
-		if err != nil {
-			log.Printf("Error publishing message to RabbitMQ: %v", err)
-			return err
-		}
+		wg.Add(1)
+		go func(ob Outbox) {
+			defer wg.Done()
 
-		err = p.Repository.MarkAsProcessed(ctx, outbox.ID)
-		if err != nil {
-			log.Printf("Error marking message as processed: %v", err)
-			return err
-		}
+			if err := p.publisher.PublishMessage("addition_queue", ob.Value); err != nil {
+				errChan <- fmt.Errorf("publish message ID %d: %w", ob.ID, err)
+				return
+			}
+
+			if err := p.Repository.MarkAsProcessed(ctx, ob.ID); err != nil {
+				errChan <- fmt.Errorf("mark message ID %d as processed: %w", ob.ID, err)
+				return
+			}
+		}(outbox)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errChan)
+	}()
+
+	var allErrors []error
+	for err := range errChan {
+		log.Printf("Error processing outbox message: %v", err)
+		allErrors = append(allErrors, err)
+	}
+
+	if len(allErrors) > 0 {
+		return fmt.Errorf("encountered errors: %v", allErrors)
 	}
 
 	return nil

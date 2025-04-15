@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import { updateNumber } from '../save-file';
+import { observeLatencyMetrics, type Payload } from '../prometheus/client';
 
 export const runConsumer = async (): Promise<void> => {
   const connection = await amqp.connect('amqp://localhost');
@@ -7,11 +8,10 @@ export const runConsumer = async (): Promise<void> => {
 
   const handleMessage = (queue: string) => async (message: amqp.ConsumeMessage | null): Promise<void> => {
     if (message) {
-      console.log(`Received message from ${queue}:`, message.content.toString());
-      const intValue = parseInt(message.content.toString(), 10);
-
+      const content = JSON.parse(message.content.toString()) as Payload;
       if (queue === 'addition_queue') {
-        await updateNumber(intValue);
+        observeLatencyMetrics(content)
+        await updateNumber(content);
       }
 
       channel.ack(message);

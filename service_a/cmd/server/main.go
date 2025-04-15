@@ -52,8 +52,8 @@ func main() {
 	outboxProcessor := outbox.NewProcessor(
 		outboxRepo,
 		publisher,
-		50,            // process 10 messages at a time
-		2*time.Second, // process every 5 seconds
+		80,            // process 80 messages at a time
+		3*time.Second, // process every 3 seconds
 	)
 
 	go outboxProcessor.Start(ctx)

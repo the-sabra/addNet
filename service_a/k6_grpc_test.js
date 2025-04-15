@@ -14,9 +14,9 @@ export const options = {
             executor: 'ramping-vus',
             startVUs: 0,
             stages: [
-                { duration: '20s', target: 25 },
-                { duration: '30s', target: 25 },
-                { duration: '10s', target: 0 },
+                { duration: '1m', target: 25 },
+                { duration: '1m', target: 25 },
+                { duration: '30s', target: 0 },
             ],
             gracefulRampDown: '5s',
         },
@@ -28,13 +28,15 @@ export const options = {
 };
 export default () => {
   client.connect('localhost:50051', { plaintext: true });
-
-  const data = { a: 5, b: 3 };
+    const a = parseInt(Math.random() * 100);
+    const b = parseInt(Math.random() * 100);
+    const res = a + b;
+  const data = { a , b };
   const response = client.invoke('addition.AdditionService/Add', data);
 
   check(response, {
     'status is OK': (r) => r && r.status === grpc.StatusOK,
-    'result is correct': (r) => r && r.message.result === 8,
+    'result is correct': (r) => r && r.message.result === res,
   });
 
   client.close();

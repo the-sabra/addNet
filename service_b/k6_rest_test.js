@@ -6,16 +6,16 @@ export const options = {
     scenarios: {
         basic: {
             executor: 'constant-vus',
-            vus: 10,
+            vus: 20,
             duration: '30s',
         },
         load: {
             executor: 'ramping-vus',
             startVUs: 0,
             stages: [
-                { duration: '20s', target: 25 },
-                { duration: '30s', target: 25 },
-                { duration: '10s', target: 0 },
+                { duration: '1m', target: 500 },
+                { duration: '1m', target: 500 },
+                { duration: '30s', target: 0 },
             ],
             gracefulRampDown: '5s',
         },
@@ -26,7 +26,7 @@ export const options = {
     },
 };
 export default () => {
-  const url = 'http://localhost:3000/latest';
+  const url = 'http://localhost:2113/latest';
   const response = http.get(url);
 
   check(response, {

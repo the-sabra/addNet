@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+bun.lock
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# Build output
+dist/
+build/
+out/
+*.tgz
+
+# Coverage
+coverage/
+*.lcov
+
+# Caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+grafana/
+prometheus/
+
+# Optional: backend binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
