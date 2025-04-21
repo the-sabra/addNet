@@ -1,5 +1,3 @@
-Here's a comprehensive README.md file for your project, giving credit to Eng Ahmed El Taweel and including all the key information:
-
 # AddNet - Distributed Microservice Application
 
 [![Go](https://img.shields.io/badge/Go-1.24+-blue.svg)](https://golang.org/)
